@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: hello-device-plugin
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: hello-device-plugin
+  template:
+    metadata:
+      labels:
+        name: hello-device-plugin
+    spec:
+      containers:
+      - name: hello-device-plugin
+        image: quay.io/hhasebe/tests/hello-device-plugin:v0.1
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+      volumes:
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins

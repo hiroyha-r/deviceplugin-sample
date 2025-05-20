@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-device-test
+  name: hello-device-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-device-test
+  template:
+    metadata:
+      name: hello-device-test
+      labels:
+        app: hello-device-test
+    spec:
+      containers:
+      - name: test
+        image: quay.io/hhasebe/nginx/nginx-unprivileged:1.28-alpine-slim
+        resources:
+          limits:
+            example.com/hello-device: 1
+            cpu: 1000m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
