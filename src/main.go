@@ -18,15 +18,19 @@ const (
 )
 
 type DevicePlugin struct {
-	devices []*pluginapi.Device
-	server  *grpc.Server
+	devices   []*pluginapi.Device
+	server    *grpc.Server
+	startedAt time.Time
 }
 
 func NewDevicePlugin() *DevicePlugin {
 	devices := []*pluginapi.Device{
 		{ID: "hello-device-1", Health: pluginapi.Healthy},
 	}
-	return &DevicePlugin{devices: devices}
+	return &DevicePlugin{
+		devices:   devices,
+		startedAt: time.Now(),
+	}
 }
 
 func (dp *DevicePlugin) GetDevicePluginOptions(context.Context, *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
@@ -38,8 +42,18 @@ func (dp *DevicePlugin) PreStartContainer(context.Context, *pluginapi.PreStartCo
 }
 
 func (dp *DevicePlugin) ListAndWatch(_ *pluginapi.Empty, stream pluginapi.DevicePlugin_ListAndWatchServer) error {
+
 	for {
-		if err := stream.Send(&pluginapi.ListAndWatchResponse{Devices: dp.devices}); err != nil {
+		var devices []*pluginapi.Device
+		now := time.Now()
+		if now.Sub(dp.startedAt) > 20*time.Minute {
+			devices = dp.devices
+			fmt.Printf("Sending devices: %v\n", devices)
+		} else {
+			devices = []*pluginapi.Device{}
+			fmt.Printf("No devices available yet | now: %s | startedAt: %s\n", now.Format(time.RFC3339), dp.startedAt.Format(time.RFC3339))
+		}
+		if err := stream.Send(&pluginapi.ListAndWatchResponse{Devices: devices}); err != nil {
 			return err
 		}
 		time.Sleep(time.Second * 10)

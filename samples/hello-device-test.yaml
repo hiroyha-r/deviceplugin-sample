@@ -18,6 +18,21 @@ spec:
       containers:
       - name: test
         image: quay.io/hhasebe/nginx/nginx-unprivileged:1.28-alpine-slim
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /
+            port: 8080
+          failureThreshold: 6
+          periodSeconds: 10
+        ports:
+        - containerPort: 8080
+          name: http
         resources:
           limits:
             example.com/hello-device: 1
